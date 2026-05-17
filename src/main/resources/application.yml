@@ -26,7 +26,7 @@ spring:
   # -------------------- MongoDB Database Configuration (NoSQL Integration) --------------------
   data:
     mongodb:
-      uri: mongodb://localhost:27017/army_weapon_db
+      uri: mongodb+srv://ndharun55_db_user:oNwXxLooWWzpshfu@cluster0.rctffbx.mongodb.net/army_weapon_db?retryWrites=true&w=majority&appName=Cluster0
 
   # -------------------- Disable auto SQL scripts (using DataInitializer instead) --------------------
   sql:
