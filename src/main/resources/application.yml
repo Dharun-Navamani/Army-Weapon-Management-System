@@ -1,0 +1,66 @@
+# ================================================================
+# ARMY WEAPON MANAGEMENT SYSTEM - Application Configuration
+# ================================================================
+
+server:
+  port: 8080
+
+spring:
+  application:
+    name: Army Weapon Management System
+
+  # -------------------- H2 Database Configuration (Zero-setup Dev Mode) --------------------
+  datasource:
+    url: jdbc:h2:mem:army_weapon_db;DB_CLOSE_DELAY=-1
+    username: sa
+    password: 
+    driver-class-name: org.h2.Driver
+
+  # -------------------- MySQL Database Configuration (Production Mode - Commented) --------------------
+  # datasource:
+  #   url: jdbc:mysql://localhost:3306/army_weapon_db?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true&createDatabaseIfNotExist=true
+  #   username: root
+  #   password: root
+  #   driver-class-name: com.mysql.cj.jdbc.Driver
+
+  # -------------------- Disable auto SQL scripts (using DataInitializer instead) --------------------
+  sql:
+    init:
+      mode: never
+
+  # -------------------- JPA / Hibernate Configuration --------------------
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+        format_sql: true
+
+  # -------------------- File Upload Configuration --------------------
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+
+# -------------------- JWT Configuration --------------------
+app:
+  jwt:
+    secret: YWRtaW5fc2VjcmV0X2tleV9mb3JfYXJteV93ZWFwb25fbWFuYWdlbWVudF9zeXN0ZW1fand0X3Rva2VuX3NpZ25pbmc=
+    expiration-ms: 86400000        # 24 hours
+    refresh-expiration-ms: 604800000  # 7 days
+
+# -------------------- Swagger / OpenAPI Configuration --------------------
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operationsSorter: method
+
+# -------------------- Logging --------------------
+logging:
+  level:
+    com.military.awms: DEBUG
+    org.springframework.security: INFO
