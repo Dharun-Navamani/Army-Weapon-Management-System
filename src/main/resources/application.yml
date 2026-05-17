@@ -23,6 +23,11 @@ spring:
   #   password: root
   #   driver-class-name: com.mysql.cj.jdbc.Driver
 
+  # -------------------- MongoDB Database Configuration (NoSQL Integration) --------------------
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/army_weapon_db
+
   # -------------------- Disable auto SQL scripts (using DataInitializer instead) --------------------
   sql:
     init:

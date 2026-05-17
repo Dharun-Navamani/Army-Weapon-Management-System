@@ -23,6 +23,11 @@ public class AuditService {
     @Autowired
     private AuditLogRepository auditLogRepository;
 
+    @Autowired(required = false)
+    private com.military.awms.repository.MongoAuditLogRepository mongoAuditLogRepository;
+
+    private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(AuditService.class);
+
     /**
      * Log an audit event for any CUD operation.
      *
@@ -36,6 +41,7 @@ public class AuditService {
                           String oldValue, String newValue) {
         String username = getCurrentUsername();
 
+        // 1. Persist to Relational Database (SQL/H2)
         AuditLog log = AuditLog.builder()
                 .action(action)
                 .entityType(entityType)
@@ -47,6 +53,25 @@ public class AuditService {
                 .build();
 
         auditLogRepository.save(log);
+
+        // 2. Persist to MongoDB (NoSQL Document) - Safe and Fault-Tolerant
+        if (mongoAuditLogRepository != null) {
+            try {
+                com.military.awms.model.MongoAuditLog mongoLog = com.military.awms.model.MongoAuditLog.builder()
+                        .action(action)
+                        .entityType(entityType)
+                        .entityId(entityId)
+                        .performedBy(username)
+                        .oldValue(oldValue)
+                        .newValue(newValue)
+                        .timestamp(LocalDateTime.now())
+                        .build();
+                mongoAuditLogRepository.save(mongoLog);
+                logger.info("Successfully persisted audit log to MongoDB for entity: {}", entityType);
+            } catch (Exception e) {
+                logger.warn("MongoDB is configured but not reachable. Proceeding with H2/SQL database only. Error: {}", e.getMessage());
+            }
+        }
     }
 
     /** Get all audit logs ordered by most recent first */
