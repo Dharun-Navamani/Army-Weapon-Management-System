@@ -49,6 +49,9 @@ public class DataInitializer implements CommandLineRunner {
     @Autowired
     private MissionRepository missionRepository;
 
+    @Autowired
+    private com.military.awms.service.AuditService auditService;
+
     @Override
     public void run(String... args) {
         // Seed roles if they don't exist
@@ -305,6 +308,11 @@ public class DataInitializer implements CommandLineRunner {
                             .status(com.military.awms.model.enums.MissionStatus.PLANNED)
                             .build()
             );
+
+            // Seed a few initial audit logs to auto-initialize the MongoDB Cloud collections
+            auditService.logAction("CREATE", "Weapon", 1L, null, "{\"name\":\"INSAS Rifle\",\"serialNumber\":\"INS-982103\",\"caliber\":\"5.56x45mm NATO\",\"status\":\"ACTIVE\"}");
+            auditService.logAction("CREATE", "Weapon", 2L, null, "{\"name\":\"SIG Sauer 716\",\"serialNumber\":\"SIG-110291\",\"caliber\":\"7.62x51mm NATO\",\"status\":\"ACTIVE\"}");
+            auditService.logAction("CREATE", "Assignment", 1L, null, "{\"weaponId\":1,\"assignedTo\":\"soldier1\",\"assignedBy\":\"officer1\",\"status\":\"ACTIVE\"}");
 
             logger.info("Sample military inventory and tactical operations data seeded successfully!");
         }
