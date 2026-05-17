@@ -26,6 +26,9 @@ public class AuditService {
     @Autowired(required = false)
     private com.military.awms.repository.MongoAuditLogRepository mongoAuditLogRepository;
 
+    @Autowired(required = false)
+    private org.springframework.data.mongodb.core.MongoTemplate mongoTemplate;
+
     private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(AuditService.class);
 
     /**
@@ -69,7 +72,38 @@ public class AuditService {
                 mongoAuditLogRepository.save(mongoLog);
                 logger.info("Successfully persisted audit log to MongoDB for entity: {}", entityType);
             } catch (Exception e) {
-                logger.warn("MongoDB is configured but not reachable. Proceeding with H2/SQL database only. Error: {}", e.getMessage());
+                logger.warn("MongoDB is configured but not reachable for audit logs: {}", e.getMessage());
+            }
+        }
+
+        // 3. Mirror the Entity Data to its own MongoDB collection (Data Lake Syncing!)
+        if (mongoTemplate != null) {
+            try {
+                String collectionName = entityType.toLowerCase() + "s";
+                if ("DELETE".equalsIgnoreCase(action)) {
+                    mongoTemplate.remove(
+                            org.springframework.data.mongodb.core.query.Query.query(
+                                    org.springframework.data.mongodb.core.query.Criteria.where("_id").is(entityId)
+                            ),
+                            collectionName
+                    );
+                    logger.info("Successfully mirrored DELETE operation to MongoDB collection: {}", collectionName);
+                } else {
+                    String dataString = (newValue != null) ? newValue : oldValue;
+                    org.bson.Document doc;
+                    if (dataString != null && dataString.trim().startsWith("{")) {
+                        doc = org.bson.Document.parse(dataString);
+                    } else {
+                        doc = new org.bson.Document();
+                        doc.put("description", dataString);
+                    }
+                    doc.put("_id", entityId);
+                    
+                    mongoTemplate.save(doc, collectionName);
+                    logger.info("Successfully mirrored {} operation to MongoDB collection: {}", action, collectionName);
+                }
+            } catch (Exception e) {
+                logger.warn("Failed to mirror entity to MongoDB data lake: {}", e.getMessage());
             }
         }
     }
